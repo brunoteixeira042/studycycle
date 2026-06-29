@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Corr. #1: Content Security Policy — bloqueia scripts externos não autorizados -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'">
+    <title>StudyCycle</title>
+    <!-- Corr. #10: Google Fonts via <link> em vez de @import (evita bloqueio de renderização) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #eab308;
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
+
+        .app-container {
+            max-width: 850px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .header {
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .circle-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .circle-selector select {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .circle-selector select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-icon {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-icon.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            font-size: 1rem;
+        }
+
+        .btn-icon.danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .backup-controls {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .cycle-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            position: relative;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin-bottom: 1.5rem;
+        }
+
+        svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            width: 100%;
+        }
+
+        .timer-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer-time {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.2rem;
+            color: #fff;
+            transition: color 0.3s;
+        }
+
+        .timer-target {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .subject-header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+
+        .current-subject {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+        }
+
+        .subject-progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        
+        .subject-progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        .timer-mode-toggle {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 0.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timer-mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .timer-mode-btn.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .pomodoro-settings {
+            display: none;
+            gap: 1rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            align-items: center;
+            color: var(--text-muted);
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        .pomodoro-settings.active {
+            display: flex;
+        }
+
+        .pomodoro-settings input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            width: 45px;
+            padding: 0.2rem;
+            border-radius: 4px;
+            text-align: center;
+            margin-left: 0.3rem;
+            font-weight: bold;
+        }
+        
+        .pomodoro-settings button {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+            margin-left: auto;
+            border-radius: 6px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        button.btn-nav, button.btn-action, label.btn-action {
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button.btn-nav {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+        button.btn-action, label.btn-action {
+            padding: 0.8rem 2.5rem;
+        }
+
+        button:hover, label.btn-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        button.btn-primary {
+            background: var(--primary);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        button.btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        button.btn-danger {
+            background: var(--danger);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .verticalized-content {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+        }
+
+        .verticalized-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-subject-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px dashed rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .add-subject-btn:hover {
+            background: rgba(59, 130, 246, 0.4);
+        }
+
+        .accordion-header {
+            width: 100%;
+            text-align: left;
+            padding: 1.2rem;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 1.05rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .accordion-header.active {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            margin-bottom: 0;
+            border-bottom: none;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .accordion-body {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: rgba(0,0,0,0.15);
+            border-radius: 0 0 12px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: none;
+            margin-bottom: 1rem;
+        }
+
+        .accordion-body.active {
+            max-height: 10000px;
+            padding: 1.5rem;
+        }
+
+        .topic-group {
+            margin-bottom: 1.5rem;
+            background: rgba(0,0,0,0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .topic-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .topic-group-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.3rem;
+            gap: 0.5rem;
+        }
+
+        .topic-group-header h4 {
+            color: #cbd5e1;
+            font-size: 1rem;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+
+        .add-item-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #60a5fa;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .add-item-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .delete-group-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .delete-group-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .check-item-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.4rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+            margin-bottom: 0.4rem;
+        }
+
+        .check-item-container:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .check-item input[type="checkbox"] {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            border: 2px solid var(--text-muted);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.2);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            margin-top: 2px;
+        }
+
+        .check-item input[type="checkbox"]:checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .check-item input[type="checkbox"]:checked::after {
+            content: "✓";
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .check-item span {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+
+        .check-item input[type="checkbox"]:checked + span {
+            color: #64748b;
+            text-decoration: line-through;
+        }
+
+        .delete-item-btn {
+            opacity: 0;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 0.5rem;
+            background: transparent;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .check-item-container:hover .delete-item-btn {
+            opacity: 1;
+        }
+
+        .add-group-btn {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .add-group-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+        
+        .pomodoro-status {
+            font-size: 0.8rem;
+            color: var(--warning);
+            font-weight: 600;
+            margin-top: 0.5rem;
+            height: 1.2rem;
+        }
+
+        .empty-cycle {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* Modal Dialog Styles */
+        dialog {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            color: white;
+            padding: 2rem;
+            margin: auto;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        dialog p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        dialog input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        dialog input:focus {
+            border-color: var(--primary);
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .dialog-buttons button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Modals -->
+<dialog id="custom-prompt-dialog">
+    <form method="dialog">
+        <p id="prompt-message"></p>
+        <input type="text" id="prompt-input" autocomplete="off"/>
+        <div class="dialog-buttons">
+            <button value="cancel" class="btn-cancel">Cancelar</button>
+            <button value="default" class="btn-primary" id="prompt-confirm-btn">OK</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="custom-confirm-dialog">
+    <form method="dialog">
+        <p id="confirm-message"></p>
+        <div class="dialog-buttons">
+            <button value="cancel" class="btn-cancel">Cancelar</button>
+            <button value="default" class="btn-danger">Confirmar</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="custom-alert-dialog">
+    <form method="dialog">
+        <p id="alert-message"></p>
+        <div class="dialog-buttons">
+            <button value="default" class="btn-primary">OK</button>
+        </div>
+    </form>
+</dialog>
+
+<div class="app-container">
+    <div class="header">
+        <h1>Gerenciador de Ciclos de Estudo</h1>
+        <p>Monte seu planejamento multiplataforma</p>
+        
+        <div class="circle-selector">
+            <select id="circle-select"></select>
+            <button class="btn-icon" id="add-circle-btn" title="Criar Novo Ciclo">+</button>
+            <button class="btn-icon danger" id="delete-circle-btn" title="Excluir Ciclo Atual" style="display:none;">🗑</button>
+        </div>
+
+        <div class="backup-controls">
+            <button class="btn-action" id="btn-export" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);">⬇ Exportar Backup (JSON)</button>
+            <label for="import-file" class="btn-action" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); cursor: pointer; margin: 0;">⬆ Importar Backup</label>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <div class="cycle-card">
+        
+        <div class="timer-mode-toggle">
+            <button class="timer-mode-btn active" id="mode-stopwatch">Cronômetro Livre</button>
+            <button class="timer-mode-btn" id="mode-pomodoro">Modo Pomodoro</button>
+        </div>
+
+        <div class="pomodoro-settings" id="pomodoro-settings">
+            <label>Foco: <input type="number" id="pomo-work-input" min="1" max="120" value="25"></label> min
+            <label style="margin-left: 1rem;">Pausa: <input type="number" id="pomo-break-input" min="1" max="60" value="5"></label> min
+            <button class="btn-primary" id="pomo-save-btn">Aplicar</button>
+        </div>
+
+        <div class="chart-container">
+            <svg id="donut" viewBox="0 0 200 200"></svg>
+            <div class="timer-display">
+                <div class="timer-title" id="timer-label">LÍQUIDO ESTUDADO</div>
+                <div class="timer-time" id="time-display">00:00:00</div>
+                <div class="timer-target" id="target-display">de 02:00:00</div>
+                <div class="pomodoro-status" id="pomodoro-status"></div>
+            </div>
+        </div>
+        
+        <div class="subject-header-container">
+            <div class="current-subject" id="current-subject-name">Nenhuma Disciplina</div>
+            <button class="btn-icon danger" id="remove-subject-btn" title="Remover Disciplina do Ciclo" style="width:28px; height:28px; font-size:0.9rem;">🗑</button>
+        </div>
+        
+        <div class="subject-progress-container">
+            <div class="subject-progress-labels">
+                <span>Progresso da Disciplina</span>
+                <span id="subject-progress-text">0% (0/0)</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="subject-progress-fill" style="width: 0%; background: #E57373;"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-nav" id="btn-prev">⬅</button>
+            <button class="btn-action btn-primary" id="btn-play">▶ Iniciar</button>
+            <button class="btn-nav" id="btn-next">➡</button>
+        </div>
+    </div>
+
+    <div class="verticalized-content">
+        <div class="verticalized-title">
+            <span>Checklist Detalhado</span>
+            <button class="add-subject-btn" id="add-subject-btn">+ Nova Disciplina no Ciclo</button>
+        </div>
+        <div id="accordion-container">
+            <!-- Accordions gerados dinamicamente -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- FUNÇÕES DE MODAL NATIVAS DO HTML5 PARA SUBSTITUIR PROMPT/CONFIRM (Compatíveis com Electron) ---
+    function customPrompt(message, defaultValue = '') {
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('custom-prompt-dialog');
+            const msgEl = document.getElementById('prompt-message');
+            const input = document.getElementById('prompt-input');
+            
+            msgEl.textContent = message;
+            input.value = defaultValue;
+            
+            const cleanup = () => {
+                dialog.removeEventListener('close', onClose);
+            };
+            
+            const onClose = () => {
+                cleanup();
+                if (dialog.returnValue === 'default') {
+                    resolve(input.value);
+                } else {
+                    resolve(null);
+                }
+            };
+            
+            dialog.addEventListener('close', onClose);
+            dialog.returnValue = ''; // Reset para caso o usuário aperte ESC
+            dialog.showModal();
+            // Pequeno delay para garantir o foco no Electron
+            setTimeout(() => input.focus(), 50);
+        });
+    }
+
+    function customConfirm(message) {
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('custom-confirm-dialog');
+            document.getElementById('confirm-message').textContent = message;
+            
+            const cleanup = () => {
+                dialog.removeEventListener('close', onClose);
+            };
+            
+            const onClose = () => {
+                cleanup();
+                resolve(dialog.returnValue === 'default');
+            };
+            
+            dialog.addEventListener('close', onClose);
+            dialog.returnValue = '';
+            dialog.showModal();
+        });
+    }
+
+    function customAlert(message) {
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('custom-alert-dialog');
+            document.getElementById('alert-message').textContent = message;
+            
+            const cleanup = () => dialog.removeEventListener('close', onClose);
+            const onClose = () => { cleanup(); resolve(); };
+            
+            dialog.addEventListener('close', onClose);
+            dialog.showModal();
+        });
+    }
+
+    // --- ESTADO INICIAL FLEXÍVEL ---
+    const defaultData = {
+        activeCircleId: 'ciclo_padrao',
+        circles: [
+            {
+                id: 'ciclo_padrao',
+                name: 'Meu Primeiro Ciclo',
+                subjects: [
+                    {
+                        id: 'sub_exemplo',
+                        name: 'Disciplina Exemplo',
+                        color: '#64B5F6',
+                        target: 7200,
+                        time: 0,
+                        checked: [],
+                        topics: [
+                            { name: 'Grupo de Assuntos', items: ['Exemplo de conteúdo'] }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+
+    let appData = JSON.parse(localStorage.getItem('tceStudyCycleV6'));
+    if (!appData || !appData.circles || appData.circles.length === 0) {
+        appData = JSON.parse(JSON.stringify(defaultData));
+        localStorage.setItem('tceStudyCycleV6', JSON.stringify(appData));
+    }
+    
+    let activeCircle = appData.circles.find(c => c.id === appData.activeCircleId) || appData.circles[0];
+    appData.activeCircleId = activeCircle.id;
+
+    let savedPomoWork = localStorage.getItem('tcePomoWork') || 25;
+    let savedPomoBreak = localStorage.getItem('tcePomoBreak') || 5;
+
+    document.getElementById('pomo-work-input').value = savedPomoWork;
+    document.getElementById('pomo-break-input').value = savedPomoBreak;
+
+    let currentIndex = 0; 
+    let timerInterval = null;
+    let isPlaying = false;
+    let timerMode = 'stopwatch'; 
+    let POMODORO_WORK = savedPomoWork * 60; 
+    let POMODORO_BREAK = savedPomoBreak * 60; 
+    let pomodoroCurrentSeconds = POMODORO_WORK;
+    let pomodoroPhase = 'work'; 
+
+    const svg = document.getElementById('donut');
+    const timeDisplay = document.getElementById('time-display');
+    const targetDisplay = document.getElementById('target-display');
+    const timerLabel = document.getElementById('timer-label');
+    const pomodoroStatus = document.getElementById('pomodoro-status');
+    const subjectName = document.getElementById('current-subject-name');
+    const btnPlay = document.getElementById('btn-play');
+    const accordionContainer = document.getElementById('accordion-container');
+    const modeStopwatchBtn = document.getElementById('mode-stopwatch');
+    const modePomodoroBtn = document.getElementById('mode-pomodoro');
+    const pomoSettingsBox = document.getElementById('pomodoro-settings');
+    const progText = document.getElementById('subject-progress-text');
+    const progFill = document.getElementById('subject-progress-fill');
+    const circleSelect = document.getElementById('circle-select');
+    const btnAddCircle = document.getElementById('add-circle-btn');
+    const btnDelCircle = document.getElementById('delete-circle-btn');
+    const btnRemoveSubject = document.getElementById('remove-subject-btn');
+    const btnAddSubject = document.getElementById('add-subject-btn');
+
+    // EXPORT & IMPORT BACKUP LOGIC
+    document.getElementById('btn-export').addEventListener('click', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "meus_ciclos_backup.json");
+        document.body.appendChild(downloadAnchorNode); 
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    });
+
+    document.getElementById('import-file').addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                // Corr. #7: Validação rigorosa da estrutura do JSON importado
+                const isValid = importedData &&
+                    typeof importedData === 'object' &&
+                    Array.isArray(importedData.circles) &&
+                    importedData.circles.length > 0 &&
+                    importedData.circles.every(c =>
+                        typeof c.id === 'string' &&
+                        typeof c.name === 'string' &&
+                        Array.isArray(c.subjects)
+                    );
+                if (isValid) {
+                    if(isPlaying) toggleTimer();
+                    appData = importedData;
+                    saveState();
+                    
+                    activeCircle = appData.circles.find(c => c.id === appData.activeCircleId) || appData.circles[0];
+                    currentIndex = 0;
+                    if(timerMode === 'pomodoro') {
+                        pomodoroPhase = 'work';
+                        pomodoroCurrentSeconds = POMODORO_WORK;
+                    }
+                    updateDisplay();
+                    await customAlert("Backup importado com sucesso! Seus dados foram restaurados.");
+                } else {
+                    await customAlert("Arquivo JSON inválido. Certifique-se de usar o arquivo exportado corretamente.");
+                }
+            } catch (err) {
+                await customAlert("Erro ao processar o arquivo. Verifique se ele não foi corrompido.");
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    });
+
+    // Corr. #8: Usa crypto.randomUUID() em vez de Math.random() para IDs mais robustos
+    function generateId() {
+        return crypto.randomUUID().replace(/-/g, '').slice(0, 9);
+    }
+
+    function getRandomColor() {
+        const colors = ['#E57373', '#81C784', '#64B5F6', '#FFD54F', '#FF8A65', '#BA68C8', '#4DB6AC', '#A1887F', '#F06292', '#4DD0E1'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function formatTime(sec) {
+        const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+        const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    function formatPomodoro(sec) {
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function saveState() {
+        appData.activeCircleId = activeCircle.id;
+        localStorage.setItem('tceStudyCycleV6', JSON.stringify(appData));
+    }
+
+    // Corr. #9: Debounce para evitar gravar no localStorage a cada segundo durante o timer
+    let _saveTimeout = null;
+    function debouncedSave() {
+        clearTimeout(_saveTimeout);
+        _saveTimeout = setTimeout(saveState, 5000);
+    }
+
+    function renderCircleSelect() {
+        circleSelect.innerHTML = '';
+        appData.circles.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            if(c.id === activeCircle.id) opt.selected = true;
+            circleSelect.appendChild(opt);
+        });
+        btnDelCircle.style.display = appData.circles.length > 1 ? 'inline-flex' : 'none';
+    }
+
+    function changeCircle(circleId) {
+        if(isPlaying) toggleTimer();
+        activeCircle = appData.circles.find(c => c.id === circleId);
+        currentIndex = 0;
+        if(timerMode === 'pomodoro') {
+            pomodoroPhase = 'work';
+            pomodoroCurrentSeconds = POMODORO_WORK;
+        }
+        saveState();
+        renderCircleSelect();
+        updateDisplay();
+    }
+
+    circleSelect.addEventListener('change', (e) => changeCircle(e.target.value));
+
+    btnAddCircle.addEventListener('click', async () => {
+        const name = await customPrompt('Nome do novo Círculo/Ciclo (ex: Pós-Edital):');
+        if(name && name.trim()) {
+            const newCircle = {
+                id: 'c_' + generateId(),
+                name: name.trim(),
+                subjects: []
+            };
+            appData.circles.push(newCircle);
+            changeCircle(newCircle.id);
+        }
+    });
+
+    btnDelCircle.addEventListener('click', async () => {
+        if(appData.circles.length <= 1) return;
+        if(await customConfirm(`Tem certeza que deseja excluir o ciclo "${activeCircle.name}" inteiro?`)) {
+            appData.circles = appData.circles.filter(c => c.id !== activeCircle.id);
+            changeCircle(appData.circles[0].id);
+        }
+    });
+
+    btnAddSubject.addEventListener('click', async () => {
+        const name = await customPrompt('Nome da nova disciplina:');
+        if(name && name.trim()) {
+            let targetHours = await customPrompt('Carga horária em horas (ex: 2 para 2h, 1.5 para 1h30m):', '2');
+            targetHours = parseFloat(targetHours);
+            if(isNaN(targetHours) || targetHours <= 0) targetHours = 2;
+            
+            activeCircle.subjects.push({
+                id: 'sub_' + generateId(),
+                name: name.trim(),
+                color: getRandomColor(),
+                target: targetHours * 3600,
+                time: 0,
+                checked: [],
+                topics: []
+            });
+            currentIndex = activeCircle.subjects.length - 1;
+            saveState();
+            updateDisplay();
+        }
+    });
+
+    btnRemoveSubject.addEventListener('click', async () => {
+        if(!activeCircle.subjects || activeCircle.subjects.length === 0) return;
+        if(await customConfirm(`Deseja remover a disciplina "${activeCircle.subjects[currentIndex].name}" do ciclo atual?`)) {
+            activeCircle.subjects.splice(currentIndex, 1);
+            if(currentIndex >= activeCircle.subjects.length) currentIndex = Math.max(0, activeCircle.subjects.length - 1);
+            saveState();
+            updateDisplay();
+        }
+    });
+
+    function playBeep() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if(!AudioContext) return;
+            const audioCtx = new AudioContext();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 800;
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 1);
+            oscillator.stop(audioCtx.currentTime + 1);
+            // N3: Fecha o AudioContext após o beep para liberar recursos
+            oscillator.onended = () => audioCtx.close();
+        } catch (e) {
+            console.log("Audio failed", e);
+        }
+    }
+
+    function updateProgress() {
+        if(activeCircle.subjects.length === 0) {
+            progText.textContent = `0% (0/0)`;
+            progFill.style.width = `0%`;
+            return;
+        }
+        const current = activeCircle.subjects[currentIndex];
+        const checkedCount = current.checked.length;
+        const total = current.topics.reduce((acc, topic) => acc + topic.items.length, 0);
+        const percent = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+        
+        progText.textContent = `${percent}% (${checkedCount}/${total})`;
+        progFill.style.width = `${percent}%`;
+        progFill.style.background = current.color;
+    }
+
+    function drawDonut() {
+        svg.innerHTML = '';
+        if(activeCircle.subjects.length === 0) return;
+
+        const radius = 80;
+        const circumference = 2 * Math.PI * radius;
+        let cumulativePercent = 0;
+        const totalTarget = activeCircle.subjects.reduce((sum, s) => sum + s.target, 0);
+
+        activeCircle.subjects.forEach((subject, i) => {
+            const percent = subject.target / totalTarget;
+            const strokeLength = percent * circumference;
+            const strokeDasharray = `${strokeLength} ${circumference}`;
+            const strokeDashoffset = -cumulativePercent * circumference;
+            const isCurrent = i === currentIndex;
+            
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", "100");
+            circle.setAttribute("cy", "100");
+            circle.setAttribute("r", radius);
+            circle.setAttribute("fill", "transparent");
+            circle.setAttribute("stroke", subject.color);
+            circle.setAttribute("stroke-width", isCurrent ? "20" : "14");
+            circle.setAttribute("stroke-dasharray", strokeDasharray);
+            circle.setAttribute("stroke-dashoffset", strokeDashoffset);
+            circle.setAttribute("opacity", isCurrent ? "1" : "0.3");
+            circle.style.transition = "all 0.4s ease";
+            circle.style.cursor = "pointer";
+            
+            circle.addEventListener('click', () => setSubject(i));
+            svg.appendChild(circle);
+            cumulativePercent += percent;
+        });
+    }
+
+    function updateDisplay() {
+        renderCircleSelect();
+        
+        if(activeCircle.subjects.length === 0) {
+            subjectName.textContent = "Ciclo Vazio";
+            subjectName.style.color = "#94a3b8";
+            timeDisplay.textContent = "00:00:00";
+            targetDisplay.textContent = "Líquido: 00:00:00";
+            btnRemoveSubject.style.display = 'none';
+            
+            accordionContainer.innerHTML = '';
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-cycle';
+            emptyDiv.textContent = 'Você não possui disciplinas neste ciclo. Clique em "+ Nova Disciplina no Ciclo" para adicionar.';
+            accordionContainer.appendChild(emptyDiv);
+            
+            svg.innerHTML = '';
+            progText.textContent = `0% (0/0)`;
+            progFill.style.width = `0%`;
+            return;
+        }
+
+        btnRemoveSubject.style.display = 'inline-flex';
+        const current = activeCircle.subjects[currentIndex];
+        subjectName.textContent = current.name;
+        subjectName.style.color = current.color;
+        targetDisplay.textContent = `Líquido: ${formatTime(current.time)}`;
+        
+        if (timerMode === 'stopwatch') {
+            timerLabel.textContent = "ESTUDEI";
+            timeDisplay.textContent = formatTime(current.time);
+            pomodoroStatus.textContent = "";
+            timeDisplay.style.color = "#fff";
+        } else {
+            timerLabel.textContent = pomodoroPhase === 'work' ? "POMODORO: FOCO" : "POMODORO: PAUSA";
+            timeDisplay.textContent = formatPomodoro(pomodoroCurrentSeconds);
+            pomodoroStatus.textContent = pomodoroPhase === 'work' ? "Foco Total" : "Descanse";
+            timeDisplay.style.color = pomodoroPhase === 'work' ? "#fff" : "#22c55e";
+        }
+        
+        drawDonut();
+        updateProgress();
+        renderAccordions();
+    }
+
+    function setSubject(index) {
+        if(activeCircle.subjects.length === 0) return;
+        if(isPlaying) toggleTimer();
+        currentIndex = index;
+        if(timerMode === 'pomodoro') {
+            pomodoroPhase = 'work';
+            pomodoroCurrentSeconds = POMODORO_WORK;
+        }
+        updateDisplay();
+    }
+
+    function tick() {
+        if(activeCircle.subjects.length === 0) return;
+        const current = activeCircle.subjects[currentIndex];
+        if (timerMode === 'stopwatch') {
+            current.time++;
+            timeDisplay.textContent = formatTime(current.time);
+            debouncedSave(); // Corr. #9: salva com debounce durante o tick
+        } else if (timerMode === 'pomodoro') {
+            pomodoroCurrentSeconds--;
+            if(pomodoroPhase === 'work') {
+                current.time++;
+                debouncedSave(); // Corr. #9: salva com debounce durante o tick
+            }
+            if (pomodoroCurrentSeconds <= 0) {
+                playBeep();
+                if (pomodoroPhase === 'work') {
+                    pomodoroPhase = 'break';
+                    pomodoroCurrentSeconds = POMODORO_BREAK;
+                    timerLabel.textContent = "POMODORO: PAUSA";
+                    pomodoroStatus.textContent = "Descanse";
+                    timeDisplay.style.color = "#22c55e"; 
+                } else {
+                    pomodoroPhase = 'work';
+                    pomodoroCurrentSeconds = POMODORO_WORK;
+                    timerLabel.textContent = "POMODORO: FOCO";
+                    pomodoroStatus.textContent = "Foco Total";
+                    timeDisplay.style.color = "#fff";
+                    toggleTimer();
+                }
+            }
+            timeDisplay.textContent = formatPomodoro(pomodoroCurrentSeconds);
+            targetDisplay.textContent = `Líquido: ${formatTime(current.time)}`;
+        }
+    }
+
+    function toggleTimer() {
+        if(activeCircle.subjects.length === 0) {
+            customAlert("Adicione uma disciplina primeiro!");
+            return;
+        }
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            btnPlay.textContent = '⏸ Pausar';
+            btnPlay.classList.add('btn-danger');
+            btnPlay.classList.remove('btn-primary');
+            timerInterval = setInterval(tick, 1000);
+        } else {
+            btnPlay.textContent = '▶ Iniciar';
+            btnPlay.classList.add('btn-primary');
+            btnPlay.classList.remove('btn-danger');
+            clearInterval(timerInterval);
+            // N1: Salva imediatamente ao pausar (cancela debounce pendente)
+            clearTimeout(_saveTimeout);
+            saveState();
+        }
+    }
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+        if(activeCircle.subjects.length === 0) return;
+        setSubject((currentIndex - 1 + activeCircle.subjects.length) % activeCircle.subjects.length);
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+        if(activeCircle.subjects.length === 0) return;
+        setSubject((currentIndex + 1) % activeCircle.subjects.length);
+    });
+
+    btnPlay.addEventListener('click', toggleTimer);
+
+    modeStopwatchBtn.addEventListener('click', () => {
+        if(isPlaying) toggleTimer();
+        timerMode = 'stopwatch';
+        modeStopwatchBtn.classList.add('active');
+        modePomodoroBtn.classList.remove('active');
+        pomoSettingsBox.classList.remove('active');
+        updateDisplay();
+    });
+
+    modePomodoroBtn.addEventListener('click', () => {
+        if(isPlaying) toggleTimer();
+        timerMode = 'pomodoro';
+        pomodoroPhase = 'work';
+        pomodoroCurrentSeconds = POMODORO_WORK;
+        modePomodoroBtn.classList.add('active');
+        modeStopwatchBtn.classList.remove('active');
+        pomoSettingsBox.classList.add('active');
+        updateDisplay();
+    });
+
+    document.getElementById('pomo-save-btn').addEventListener('click', async () => {
+        let workVal = parseInt(document.getElementById('pomo-work-input').value);
+        let breakVal = parseInt(document.getElementById('pomo-break-input').value);
+        if(!workVal || workVal < 1) workVal = 25;
+        if(!breakVal || breakVal < 1) breakVal = 5;
+        
+        localStorage.setItem('tcePomoWork', workVal);
+        localStorage.setItem('tcePomoBreak', breakVal);
+        
+        POMODORO_WORK = workVal * 60;
+        POMODORO_BREAK = breakVal * 60;
+        
+        if(timerMode === 'pomodoro') {
+            if(isPlaying) toggleTimer();
+            pomodoroPhase = 'work';
+            pomodoroCurrentSeconds = POMODORO_WORK;
+            updateDisplay();
+        }
+        await customAlert('Tempos do Pomodoro atualizados!');
+    });
+
+    // EDIÇÃO DE ITENS E GRUPOS
+    function toggleCheck(subjectId, itemStr) {
+        const subject = activeCircle.subjects.find(s => s.id === subjectId);
+        if(subject.checked.includes(itemStr)) {
+            subject.checked = subject.checked.filter(i => i !== itemStr);
+        } else {
+            subject.checked.push(itemStr);
+        }
+        updateProgress();
+        saveState();
+    }
+
+    async function deleteItem(subjectId, topicIndex, itemIndex) {
+        if(await customConfirm('Tem certeza que deseja remover este item?')) {
+            const subject = activeCircle.subjects.find(s => s.id === subjectId);
+            const itemStr = subject.topics[topicIndex].items[itemIndex];
+            subject.checked = subject.checked.filter(i => i !== itemStr);
+            subject.topics[topicIndex].items.splice(itemIndex, 1);
+            saveState();
+            updateProgress();
+            renderAccordions();
+        }
+    }
+
+    async function addItem(subjectId, topicIndex) {
+        const newItem = await customPrompt('Digite o nome do novo subtópico:');
+        if (newItem && newItem.trim() !== '') {
+            const subject = activeCircle.subjects.find(s => s.id === subjectId);
+            subject.topics[topicIndex].items.push(newItem.trim());
+            saveState();
+            updateProgress();
+            renderAccordions();
+        }
+    }
+
+    async function addGroup(subjectId) {
+        const newGroup = await customPrompt('Digite o nome do novo grupo de estudo:');
+        if (newGroup && newGroup.trim() !== '') {
+            const subject = activeCircle.subjects.find(s => s.id === subjectId);
+            subject.topics.push({ name: newGroup.trim(), items: [] });
+            saveState();
+            updateProgress();
+            renderAccordions();
+        }
+    }
+
+    async function deleteGroup(subjectId, topicIndex) {
+        const subject = activeCircle.subjects.find(s => s.id === subjectId);
+        if(await customConfirm(`Tem certeza que deseja remover o grupo inteiro "${subject.topics[topicIndex].name}" e todos os seus itens?`)) {
+            subject.topics[topicIndex].items.forEach(item => {
+                subject.checked = subject.checked.filter(i => i !== item);
+            });
+            subject.topics.splice(topicIndex, 1);
+            saveState();
+            updateProgress();
+            renderAccordions();
+        }
+    }
+
+    function renderAccordions() {
+        accordionContainer.innerHTML = '';
+        if(activeCircle.subjects.length === 0) return;
+
+        const current = activeCircle.subjects[currentIndex];
+
+        // Ordena os tópicos numericamente pelo prefixo do nome (ex: "1-Direito", "2-Port.")
+        // Preserva o índice original para que edição/exclusão operem no array correto
+        const extractNum = name => {
+            const match = name.match(/^(\d+)/);
+            return match ? parseInt(match[1], 10) : Infinity;
+        };
+        const sortedTopics = current.topics
+            .map((topic, originalIndex) => ({ topic, originalIndex }))
+            .sort((a, b) => {
+                const diff = extractNum(a.topic.name) - extractNum(b.topic.name);
+                if (diff !== 0) return diff;
+                return a.topic.name.localeCompare(b.topic.name, 'pt-BR');
+            });
+
+        sortedTopics.forEach(({ topic, originalIndex }, visualIndex) => {
+            // Criação DOM Pura (Boa prática de segurança contra XSS)
+            const header = document.createElement('div');
+            header.className = 'accordion-header active';
+            
+            const titleSpan = document.createElement('span');
+            titleSpan.style.color = current.color;
+            titleSpan.style.fontWeight = '700';
+            titleSpan.textContent = `${visualIndex+1}. ${topic.name}`;
+            
+            const arrowSpan = document.createElement('span');
+            arrowSpan.style.fontSize = '0.8em';
+            arrowSpan.textContent = '▲';
+            
+            header.appendChild(titleSpan);
+            header.appendChild(arrowSpan);
+            
+            const body = document.createElement('div');
+            body.className = 'accordion-body active'; 
+            
+            const group = document.createElement('div');
+            group.className = 'topic-group';
+            
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'topic-group-header';
+            
+            const h4 = document.createElement('h4');
+            h4.textContent = 'Subtópicos';
+            
+            const btnAdd = document.createElement('button');
+            btnAdd.className = 'add-item-btn';
+            btnAdd.textContent = '+ Adicionar';
+            btnAdd.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addItem(current.id, originalIndex);
+            });
+            
+            const btnDelGroup = document.createElement('button');
+            btnDelGroup.className = 'delete-group-btn';
+            btnDelGroup.textContent = '🗑 Excluir Grupo';
+            btnDelGroup.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteGroup(current.id, originalIndex);
+            });
+            
+            groupHeader.appendChild(h4);
+            groupHeader.appendChild(btnAdd);
+            groupHeader.appendChild(btnDelGroup);
+            group.appendChild(groupHeader);
+            
+            // Ordena os subtópicos numericamente pelo prefixo (ex: "1-Introdução", "2-Conceitos")
+            const sortedItems = topic.items
+                .map((item, originalItemIdx) => ({ item, originalItemIdx }))
+                .sort((a, b) => {
+                    const numA = extractNum(a.item);
+                    const numB = extractNum(b.item);
+                    const diff = numA - numB;
+                    if (diff !== 0) return diff;
+                    return a.item.localeCompare(b.item, 'pt-BR');
+                });
+
+            sortedItems.forEach(({ item, originalItemIdx }) => {
+                const isChecked = current.checked.includes(item);
+                
+                const itemContainer = document.createElement('div');
+                itemContainer.className = 'check-item-container';
+                
+                const checkLabel = document.createElement('label');
+                checkLabel.className = 'check-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = isChecked;
+                checkbox.addEventListener('change', () => toggleCheck(current.id, item));
+                
+                const span = document.createElement('span');
+                span.textContent = item; // Protege contra XSS
+                
+                checkLabel.appendChild(checkbox);
+                checkLabel.appendChild(span);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-item-btn';
+                deleteBtn.textContent = '✖';
+                deleteBtn.addEventListener('click', () => deleteItem(current.id, originalIndex, originalItemIdx));
+                
+                itemContainer.appendChild(checkLabel);
+                itemContainer.appendChild(deleteBtn);
+                group.appendChild(itemContainer);
+            });
+            
+            body.appendChild(group);
+
+            header.addEventListener('click', () => {
+                body.classList.toggle('active');
+                header.classList.toggle('active');
+                arrowSpan.textContent = body.classList.contains('active') ? '▲' : '▼';
+            });
+
+            accordionContainer.appendChild(header);
+            accordionContainer.appendChild(body);
+        });
+
+        const addGroupBtn = document.createElement('button');
+        addGroupBtn.className = 'add-group-btn';
+        addGroupBtn.textContent = '+ Criar novo grupo de estudo';
+        addGroupBtn.addEventListener('click', () => addGroup(current.id));
+        accordionContainer.appendChild(addGroupBtn);
+    }
+
+    // N1: Salva imediatamente ao fechar o app, mesmo com debounce pendente
+    window.addEventListener('beforeunload', () => {
+        clearTimeout(_saveTimeout);
+        saveState();
+    });
+
+    // INICIO
+    updateDisplay();
+</script>
+
+</body>
+</html>

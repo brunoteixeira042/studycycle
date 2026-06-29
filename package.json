@@ -1,0 +1,42 @@
+{
+  "name": "studycycle",
+  "version": "1.0.0",
+  "description": "StudyCycle — Interactive Study Cycle Manager for competitive exams",
+  "homepage": "https://github.com/bruno/ciclo-estudos",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:linux": "electron-builder --linux",
+    "build:win": "electron-builder --win"
+  },
+  "author": {
+    "name": "Comunidade",
+    "email": "contato@exemplo.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^42.5.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.studycycle.app",
+    "productName": "StudyCycle",
+    "directories": {
+      "output": "dist"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education",
+      "icon": "logo.png"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "logo.png"
+    }
+  },
+  "allowScripts": {
+    "electron@30.5.1": true
+  }
+}
