@@ -36,3 +36,6 @@ desktop.ini
 
 # Cache
 .cache/
+
+# Videos / Capturas de tela
+Captura de tela/*.mp4

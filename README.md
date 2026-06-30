@@ -14,6 +14,24 @@
 - **Progress Bar** — track the percentage of content studied
 - **JSON Backup** — easily export and import your data
 
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="Captura%20de%20tela/Captura%20de%20tela%20de%202026-06-30%2012-34-23.png" alt="StudyCycle Dashboard" width="800">
+</p>
+
+<p align="center">
+  <img src="Captura%20de%20tela/Captura%20de%20tela%20de%202026-06-30%2012-34-39.png" alt="StudyCycle Checklist" width="800">
+</p>
+
+<p align="center">
+  <img src="Captura%20de%20tela/Captura%20de%20tela%20de%202026-06-30%2012-35-06.png" alt="StudyCycle Timer" width="800">
+</p>
+
+---
+
 ## 🖥️ Supported Platforms
 
 | Platform | Format |
