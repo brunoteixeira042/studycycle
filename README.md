@@ -34,7 +34,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/seu-usuario/studycycle.git
+git clone https://github.com/brunoteixeira042/studycycle.git
 cd studycycle
 
 # Install dependencies
