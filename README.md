@@ -16,7 +16,15 @@
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots & Demo
+
+### 🎬 Demo Video
+
+<p align="center">
+  <video src="Captura%20de%20tela/2026-06-30%2012-49-59.mp4" width="800" controls></video>
+</p>
+
+### 🖼️ Screenshots
 
 <p align="center">
   <img src="Captura%20de%20tela/Captura%20de%20tela%20de%202026-06-30%2012-34-23.png" alt="StudyCycle Dashboard" width="800">
