@@ -20,9 +20,7 @@
 
 ### 🎬 Demo Video
 
-<p align="center">
-  <video src="Captura%20de%20tela/2026-06-30%2012-49-59.mp4" width="800" controls></video>
-</p>
+- [Assista ao vídeo de demonstração](Captura%20de%20tela/2026-06-30%2012-49-59.mp4)
 
 ### 🖼️ Screenshots
 
