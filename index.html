@@ -702,6 +702,37 @@
     </form>
 </dialog>
 
+<dialog id="ia-helper-dialog" style="max-width: 650px;">
+    <form method="dialog">
+        <h2 style="margin-top: 0; color: #c084fc; display: flex; align-items: center; gap: 0.5rem; font-size: 1.4rem;">
+            <span>🤖 Criar Ciclo de Estudos com IA</span>
+        </h2>
+        <p style="font-size: 0.95rem; font-weight: normal; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+            Você pode usar Inteligência Artificial (como Gemini, ChatGPT ou Claude) para gerar seu ciclo de estudos completo com matérias, metas e tópicos em segundos, e depois importá-lo no aplicativo.
+        </p>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem; color: white; font-size: 0.95rem;">Ações Rápidas:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                <button type="button" class="btn-primary" id="btn-ia-import-example" style="font-size: 0.85rem; padding: 0.5rem 1rem; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">⚡ Carregar Ciclo de Exemplo</button>
+                <button type="button" class="btn-primary" id="btn-ia-download-json" style="font-size: 0.85rem; padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">⬇ Baixar Modelo JSON</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label style="font-weight: 600; font-size: 0.9rem; color: white;">Copie o prompt abaixo para mandar à IA:</label>
+                <button type="button" id="btn-copy-prompt" style="padding: 0.2rem 0.6rem; font-size: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; cursor: pointer;">📋 Copiar Prompt</button>
+            </div>
+            <textarea id="ia-prompt-text" readonly style="width: 100%; height: 160px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #a5b4fc; padding: 0.7rem; font-family: monospace; font-size: 0.8rem; resize: none; outline: none; line-height: 1.4;"></textarea>
+        </div>
+
+        <div class="dialog-buttons">
+            <button value="default" class="btn-cancel">Fechar</button>
+        </div>
+    </form>
+</dialog>
+
 <div class="app-container">
     <div class="header">
         <h1>Gerenciador de Ciclos de Estudo</h1>
@@ -717,6 +748,7 @@
             <button class="btn-action" id="btn-export" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4);">⬇ Exportar Backup (JSON)</button>
             <label for="import-file" class="btn-action" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); cursor: pointer; margin: 0;">⬆ Importar Backup</label>
             <input type="file" id="import-file" accept=".json" style="display: none;">
+            <button class="btn-action" id="btn-ia-helper" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4);">🤖 Criar com IA / Modelo</button>
         </div>
     </div>
 
@@ -776,6 +808,7 @@
     </div>
 </div>
 
+<script src="exemplo%20JSON/meus_ciclos_backup.js"></script>
 <script>
     // --- FUNÇÕES DE MODAL NATIVAS DO HTML5 PARA SUBSTITUIR PROMPT/CONFIRM (Compatíveis com Electron) ---
     function customPrompt(message, defaultValue = '') {
@@ -960,6 +993,107 @@
         };
         reader.readAsText(file);
         event.target.value = '';
+    });
+
+    // IA HELPER LOGIC
+    const iaHelperDialog = document.getElementById('ia-helper-dialog');
+    const iaPromptText = document.getElementById('ia-prompt-text');
+
+    if (iaPromptText) {
+        iaPromptText.value = `Crie um plano de estudos personalizado no formato JSON para o meu objetivo: [CONCURSO OU EDITAL DESEJADO].
+
+Utilize exatamente a estrutura JSON válida abaixo:
+{
+  "activeCircleId": "ciclo_estudos",
+  "circles": [
+    {
+      "id": "ciclo_estudos",
+      "name": "Nome do Planejamento",
+      "subjects": [
+        {
+          "id": "sigla_ou_id_materia",
+          "name": "Nome da Disciplina",
+          "color": "#E57373", 
+          "target": 7200, 
+          "time": 0,
+          "checked": [],
+          "topics": [
+            {
+              "name": "Grupo ou Tópico Principal",
+              "items": [
+                "Assunto Detalhado 1",
+                "Assunto Detalhado 2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Regras obrigatórias:
+1. As matérias/disciplinas devem ter id único.
+2. A propriedade "color" deve ser uma cor hexadecimal (ex: #E57373, #81C784, #64B5F6, #FFD54F, #FF8A65, #BA68C8, #4DB6AC, #A1887F). Escolha cores harmoniosas.
+3. A propriedade "target" é o tempo de estudo planejado em SEGUNDOS para aquela matéria (ex: 7200 para 2h de estudo líquido, 5400 para 1h30).
+4. O valor "time" deve iniciar em 0.
+5. O valor "checked" deve ser um array vazio [] correspondendo aos itens concluídos.
+6. A propriedade "topics" é um array de objetos, onde cada objeto tem "name" (nome do grupo/tópico) e "items" (array de strings com os assuntos detalhados a estudar).
+7. Forneça APENAS o JSON válido para copiar direto.`;
+    }
+
+    document.getElementById('btn-ia-helper').addEventListener('click', () => {
+        iaHelperDialog.showModal();
+    });
+
+    document.getElementById('btn-copy-prompt').addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(iaPromptText.value);
+            const originalText = document.getElementById('btn-copy-prompt').textContent;
+            document.getElementById('btn-copy-prompt').textContent = 'Copiado! ✓';
+            setTimeout(() => {
+                document.getElementById('btn-copy-prompt').textContent = originalText;
+            }, 2000);
+        } catch (err) {
+            console.error('Erro ao copiar:', err);
+        }
+    });
+
+    document.getElementById('btn-ia-download-json').addEventListener('click', () => {
+        if (typeof EXEMPLO_CICLOS === 'undefined') {
+            customAlert("Erro: Dados do ciclo de exemplo não carregados.");
+            return;
+        }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(EXEMPLO_CICLOS, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "meus_ciclos_backup.json");
+        document.body.appendChild(downloadAnchorNode); 
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    });
+
+    document.getElementById('btn-ia-import-example').addEventListener('click', async () => {
+        if (typeof EXEMPLO_CICLOS === 'undefined') {
+            customAlert("Erro: Dados do ciclo de exemplo não carregados.");
+            return;
+        }
+        const confirmLoad = await customConfirm("Deseja carregar o ciclo de estudos de exemplo? Isso substituirá seus dados atuais.");
+        if (confirmLoad) {
+            if(isPlaying) toggleTimer();
+            appData = JSON.parse(JSON.stringify(EXEMPLO_CICLOS));
+            saveState();
+            
+            activeCircle = appData.circles.find(c => c.id === appData.activeCircleId) || appData.circles[0];
+            currentIndex = 0;
+            if(timerMode === 'pomodoro') {
+                pomodoroPhase = 'work';
+                pomodoroCurrentSeconds = POMODORO_WORK;
+            }
+            updateDisplay();
+            iaHelperDialog.close();
+            await customAlert("Ciclo de exemplo carregado com sucesso!");
+        }
     });
 
     // Corr. #8: Usa crypto.randomUUID() em vez de Math.random() para IDs mais robustos

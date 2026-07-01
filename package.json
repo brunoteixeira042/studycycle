@@ -1,6 +1,6 @@
 {
   "name": "studycycle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "StudyCycle — Interactive Study Cycle Manager for competitive exams",
   "homepage": "https://github.com/brunoteixeira042/studycycle",
   "main": "main.js",
